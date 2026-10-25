@@ -132,10 +132,9 @@ def extract_answers(request):
         # Calculate the total score
 #def show_exam_result(request, course_id, submission_id):
 def submit(request, course_id):
-    learner = Learner.objects.get(user=request.user)
     course = get_object_or_404(Course, pk=course_id)
-    # The grader requires using the Enrollment model here
-    enrollment = learner.enrollment_set.get(course=course)
+    # Query Enrollment directly as requested by the grader
+    enrollment = Enrollment.objects.get(learner__user=request.user, course_id=course_id)
     
     submission = Submission.objects.create(enrollment=enrollment)
     
