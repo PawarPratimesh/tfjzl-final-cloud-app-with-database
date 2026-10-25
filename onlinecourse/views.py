@@ -154,8 +154,23 @@ def show_exam_result(request, course_id, submission_id):
     course = get_object_or_404(Course, pk=course_id)
     submission = get_object_or_404(Submission, pk=submission_id)
     
+    selected_ids = [choice.id for choice in submission.choices.all()]
+    grade = 0
+    possible = 0
+    
+    for question in course.question_set.all():
+        possible += question.grade
+        correct_choices = [ch.id for ch in question.choice_set.filter(is_correct=True)]
+        user_choices = [ch.id for ch in question.choice_set.all() if ch.id in selected_ids]
+        
+        if set(correct_choices) == set(user_choices) and len(correct_choices) > 0:
+            grade += question.grade
+            
     return render(request, 'onlinecourse/exam_result_bootstrap.html', {
         'course': course,
-        'submission': submission
+        'submission': submission,
+        'grade': grade,
+        'possible': possible,
+        'selected_ids': selected_ids
     })
 
