@@ -132,5 +132,30 @@ def extract_answers(request):
         # Calculate the total score
 #def show_exam_result(request, course_id, submission_id):
 
+def submit(request, course_id):
+    learner = Learner.objects.get(user=request.user)
+    course = get_object_or_404(Course, pk=course_id)
+    
+    # Create a new submission
+    submission = Submission.objects.create(learner=learner, course=course)
+    
+    # Loop through the questions and choices to save the selected ones
+    for question in course.question_set.all():
+        for choice in question.choice_set.all():
+            if f'choice_{choice.id}' in request.POST:
+                submission.choices.add(choice)
+                
+    submission.save()
+    
+    # Redirect to the show_exam_result view
+    return redirect('onlinecourse:show_exam_result', course_id=course.id, submission_id=submission.id)
 
+def show_exam_result(request, course_id, submission_id):
+    course = get_object_or_404(Course, pk=course_id)
+    submission = get_object_or_404(Submission, pk=submission_id)
+    
+    return render(request, 'onlinecourse/exam_result_bootstrap.html', {
+        'course': course,
+        'submission': submission
+    })
 
